@@ -35,11 +35,20 @@ function removeTodo (ref, id){
     return database.ref(`${ref}/${id}`).remove();
 }
 
+function updateComplete(dbRef, id){
+    let ref =  database.ref(`${dbRef}/${id}`);
+    ref.once("value", snapshot => {
+        let todo = snapshot.val();
+        ref.update({completed: !todo.completed});
+    });
+}
+
 export {
     login,
     logout,
     auth,
     createTodo,
     removeTodo,
+    updateComplete,
     database
 }
