@@ -39,7 +39,16 @@ function updateComplete(dbRef, id){
     let ref =  database.ref(`${dbRef}/${id}`);
     ref.once("value", snapshot => {
         let todo = snapshot.val();
-        ref.update({completed: !todo.completed});
+        ref.update({
+            completed: !todo.completed, 
+            order: todo.order *= -1
+            // because by default, firebase sorts by ASCENDING order; 
+            // and since order is initialized as -1, by multiplying by
+            // -1 here, we shoot that bad boy straight to the top of the list
+            // (by making it the least value); something to note, though, is 
+            // if ALL the checkboxes are marked, then the order key doesn't seem
+            // to matter, and the TODOs are arranged by the order in which they were added
+        });
     });
 }
 
