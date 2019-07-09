@@ -115,7 +115,7 @@ handleComplete = todoId => {
 }
 
 handlePopulateTodos = () => {
-  database.ref(this.state.dbRef).on("value", snapshot => {
+  database.ref(this.state.dbRef).orderByChild("completed").on("value", snapshot => {
     const newStateArr = [];
     snapshot.forEach(childSnapshot => {
       newStateArr.push({
