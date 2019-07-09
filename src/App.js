@@ -1,13 +1,11 @@
-import React from 'react';
+import React, { Component } from 'react';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        howdy
-      </header>
-    </div>
-  );
+class App extends Component {
+  render() {
+    return (
+      <h1>Welcome to React Firebase TODOs</h1>
+    );
+  };
 }
 
 export default App;
