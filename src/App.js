@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Route, Link, Switch, Redirect, BrowserRouter as Router } from "react-router-dom";
-import { login, logout, auth } from "./utils/firebaseService";
+import { login, logout, auth, createTodo } from "./utils/firebaseService";
 
 const linkStyle = {
   textDecoration: "underline",
@@ -31,7 +31,7 @@ function Home() {
   );
 }
 
-function Dashboard({user}) {
+function Dashboard({user, text, handleSubmit, handleChange}) {
   // try not to have more than one h1 on any given page
   return (
     <div>
@@ -41,6 +41,15 @@ function Dashboard({user}) {
         alt={user.displayName} 
         style={{height: 100, borderRadius: "50%", border: "3px solid black"}}
       />
+      <hr />
+      <h5>Here are your TODO items:</h5>
+      <ul>
+        {/* we'll map through our todo items here */}
+      </ul>
+      <form onSubmit={handleSubmit}>
+        <input name="text" value={text} onChange={handleChange}/>
+        <button>Add TODO</button>
+      </form>
     </div>
   );
 }
@@ -62,16 +71,35 @@ class App extends Component {
     super();
     this.state = {
       authenticated: false,
-      user: null
+      user: null,
+      text: "",
+      dbRef: null,
     }
   }
+
+
+handleChange = e => {
+  this.setState({
+    [e.target.name] : e.target.value
+  })
+}
+
+handleSubmit = e => {
+  const {dbRef, text} = this.state;
+  e.preventDefault();
+  createTodo(dbRef, {
+    text,
+    completed: false
+  }).then(()=>this.setState({text:""}));
+}
 
   componentDidMount() {
     auth.onAuthStateChanged(user => {
       if (user) {
         this.setState({ 
           authenticated: true,
-          user
+          user,
+          dbRef: `users/${user.uid}/todos` 
         });
       } else {
         this.setState({ 
@@ -106,7 +134,10 @@ class App extends Component {
           />
           <PrivateRoute 
             authenticated={this.state.authenticated} 
+            handleChange={this.handleChange}
+            handleSubmit={this.handleSubmit}
             user={this.state.user} 
+            text={this.state.text} 
             path="/dashboard" 
             component={Dashboard} 
           />
