@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Route, Link, Switch, Redirect, BrowserRouter as Router } from "react-router-dom";
-import { login, logout, auth, createTodo, removeTodo, database } from "./utils/firebaseService";
+import { login, logout, auth, createTodo, removeTodo, updateComplete, database } from "./utils/firebaseService";
 
 const linkStyle = {
   textDecoration: "underline",
@@ -31,7 +31,7 @@ function Home() {
   );
 }
 
-function Dashboard({user, text, todos, handleSubmit, handleChange, handleRemove}) {
+function Dashboard({user, text, todos, handleSubmit, handleChange, handleRemove, handleComplete}) {
   // try not to have more than one h1 on any given page
   return (
     <div>
@@ -45,8 +45,13 @@ function Dashboard({user, text, todos, handleSubmit, handleChange, handleRemove}
       <h5>Here are your TODO items:</h5>
       <ul style={{listStyle: "none"}}>
         {
-          todos.map(({id, text})=>(
+          todos.map(({id, text, completed})=>(
             <li key={id}>
+              <input 
+                type="checkbox"
+                checked={completed}
+                onChange={()=>handleComplete(id)}
+              />&nbsp;|&nbsp;
               <span onClick={()=> handleRemove(id)}>X</span>
               &nbsp;{text}
             </li>
@@ -105,9 +110,12 @@ handleRemove = todoId => {
   removeTodo(this.state.dbRef, todoId);
 };
 
+handleComplete = todoId => {
+  updateComplete(this.state.dbRef, todoId);
+}
 
 handlePopulateTodos = () => {
-  database.ref(this.state.dbRef).on("value", snapshot => {
+  database.ref(this.state.dbRef).orderByChild("completed").on("value", snapshot => {
     const newStateArr = [];
     snapshot.forEach(childSnapshot => {
       newStateArr.push({
@@ -163,6 +171,7 @@ handlePopulateTodos = () => {
             handleChange={this.handleChange}
             handleSubmit={this.handleSubmit}
             handleRemove={this.handleRemove}
+            handleComplete={this.handleComplete}
             user={this.state.user} 
             text={this.state.text} 
             todos={this.state.todos}
