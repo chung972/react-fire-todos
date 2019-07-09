@@ -27,8 +27,13 @@ function logout(){
     return auth.signOut();
 }
 
+function createTodo(ref, todo) {
+    return database.ref(ref).push(todo);
+}
+
 export {
     login,
     logout,
-    auth
+    auth,
+    createTodo
 }
