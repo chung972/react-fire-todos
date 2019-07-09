@@ -2,6 +2,18 @@ import React, { Component } from 'react';
 import { Route, Link, Switch, Redirect, BrowserRouter as Router } from "react-router-dom";
 
 
+// PRIVATE ROUTE
+function PrivateRoute({ authenticated, component: Component, ...rest }){
+  return(
+    <Route
+      render={props =>(
+        authenticated ? <Component {...rest} {...props} /> : <Redirect to="/login"/>
+      )}
+
+    />
+  );
+}
+
 // CHILD COMPONENTS
 function Home() {
   // these are (if it wasn't obvious) FUNCTIONal components
@@ -33,6 +45,14 @@ function Login() {
 
 // PARENT COMPONENT
 class App extends Component {
+
+  constructor() {
+    super();
+    this.state = {
+      authenticated: false
+    }
+  }
+
   render() {
     return (
       <Router>
@@ -46,10 +66,8 @@ class App extends Component {
         </ul>
         <Switch>
           <Route exact path="/" component={Home} />
-          <Route path="/dashboard" component={Dashboard} />
+          <PrivateRoute authenticated={this.state.authenticated} path="/dashboard" component={Dashboard} />
           <Route path="/login" component={Login} />
-
-
         </Switch>
       </Router>
     );
