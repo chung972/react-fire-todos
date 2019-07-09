@@ -102,7 +102,10 @@ handleSubmit = e => {
   e.preventDefault();
   createTodo(dbRef, {
     text,
-    completed: false
+    completed: false,
+    order: 1  
+    // this key (order) is here for the sole purpose of sorting by DESCENDING order 
+    // (look at updateComplete in firebaseService for more info)
   }).then(()=>this.setState({text:""}));
 };
 
@@ -115,7 +118,7 @@ handleComplete = todoId => {
 }
 
 handlePopulateTodos = () => {
-  database.ref(this.state.dbRef).orderByChild("completed").on("value", snapshot => {
+  database.ref(this.state.dbRef).orderByChild("order").on("value", snapshot => {
     const newStateArr = [];
     snapshot.forEach(childSnapshot => {
       newStateArr.push({
