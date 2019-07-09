@@ -4,6 +4,8 @@ import { Route, Link, Switch, Redirect, BrowserRouter as Router } from "react-ro
 
 // CHILD COMPONENTS
 function Home() {
+  // these are (if it wasn't obvious) FUNCTIONal components
+  // they do NOT have state
   return (
     <div>
       <h1>Welcome to React Firebase TODOs</h1>
@@ -33,7 +35,23 @@ function Login() {
 class App extends Component {
   render() {
     return (
-      Home()
+      <Router>
+        <ul>
+          <li>
+            <Link to="/">Home</Link>
+          </li>
+          <li>
+            <Link to="/dashboard">Dashboard</Link>
+          </li>
+        </ul>
+        <Switch>
+          <Route exact path="/" component={Home} />
+          <Route path="/dashboard" component={Dashboard} />
+          <Route path="/login" component={Login} />
+
+
+        </Switch>
+      </Router>
     );
   };
 }
