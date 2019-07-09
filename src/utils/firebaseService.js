@@ -31,9 +31,15 @@ function createTodo(ref, todo) {
     return database.ref(ref).push(todo);
 }
 
+function removeTodo (ref, id){
+    return database.ref(`${ref}/${id}`).remove();
+}
+
 export {
     login,
     logout,
     auth,
-    createTodo
+    createTodo,
+    removeTodo,
+    database
 }
