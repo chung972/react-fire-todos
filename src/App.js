@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Route, Link, Switch, Redirect, BrowserRouter as Router } from "react-router-dom";
-import { login, logout, auth, createTodo } from "./utils/firebaseService";
+import { login, logout, auth, createTodo, removeTodo, database } from "./utils/firebaseService";
 
 const linkStyle = {
   textDecoration: "underline",
@@ -31,7 +31,7 @@ function Home() {
   );
 }
 
-function Dashboard({user, text, handleSubmit, handleChange}) {
+function Dashboard({user, text, todos, handleSubmit, handleChange, handleRemove}) {
   // try not to have more than one h1 on any given page
   return (
     <div>
@@ -43,8 +43,15 @@ function Dashboard({user, text, handleSubmit, handleChange}) {
       />
       <hr />
       <h5>Here are your TODO items:</h5>
-      <ul>
-        {/* we'll map through our todo items here */}
+      <ul style={{listStyle: "none"}}>
+        {
+          todos.map(({id, text})=>(
+            <li key={id}>
+              <span onClick={()=> handleRemove(id)}>X</span>
+              &nbsp;{text}
+            </li>
+          ))
+        }
       </ul>
       <form onSubmit={handleSubmit}>
         <input name="text" value={text} onChange={handleChange}/>
@@ -73,6 +80,7 @@ class App extends Component {
       authenticated: false,
       user: null,
       text: "",
+      todos:[],
       dbRef: null,
     }
   }
@@ -82,7 +90,7 @@ handleChange = e => {
   this.setState({
     [e.target.name] : e.target.value
   })
-}
+};
 
 handleSubmit = e => {
   const {dbRef, text} = this.state;
@@ -91,6 +99,24 @@ handleSubmit = e => {
     text,
     completed: false
   }).then(()=>this.setState({text:""}));
+};
+
+handleRemove = todoId => {
+  removeTodo(this.state.dbRef, todoId);
+};
+
+
+handlePopulateTodos = () => {
+  database.ref(this.state.dbRef).on("value", snapshot => {
+    const newStateArr = [];
+    snapshot.forEach(childSnapshot => {
+      newStateArr.push({
+        id: childSnapshot.key,
+        ...childSnapshot.val()
+      });
+    });
+    this.setState({todos: newStateArr});
+  });
 }
 
   componentDidMount() {
@@ -100,11 +126,12 @@ handleSubmit = e => {
           authenticated: true,
           user,
           dbRef: `users/${user.uid}/todos` 
-        });
+        }, this.handlePopulateTodos);
       } else {
         this.setState({ 
           authenticated: false,
-          user: null 
+          user: null,
+          dbRef: null
         });
       }
     });
@@ -130,17 +157,17 @@ handleSubmit = e => {
         <Switch>
           <Route 
             exact path="/" 
-            component={Home}
-          />
+            component={Home} />
           <PrivateRoute 
             authenticated={this.state.authenticated} 
             handleChange={this.handleChange}
             handleSubmit={this.handleSubmit}
+            handleRemove={this.handleRemove}
             user={this.state.user} 
             text={this.state.text} 
+            todos={this.state.todos}
             path="/dashboard" 
-            component={Dashboard} 
-          />
+            component={Dashboard} />
           <Route 
             path="/login" 
             render={props => (
@@ -148,8 +175,7 @@ handleSubmit = e => {
                 {...props}
                 authenticated={this.state.authenticated}
               />
-            )}
-          />
+            )}/>
         </Switch>
       </Router>
     );
